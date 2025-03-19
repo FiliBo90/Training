@@ -1,750 +1,614 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Workout Progress Tracker</title>
+  <meta charset="UTF-8">
+  <title>GymApp - Versión Definitiva con Toggles y Gráfico</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <!-- Tailwind CSS desde CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Chart.js desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Estilos extra para el hero, transiciones y acordeones -->
   <style>
-    /* Estilos personalizados para mejoras gráficas */
-    .nav-link:hover {
-      color: #FFD700;
+    /* Sombra suave en contenedores */
+    .shadow-soft {
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
-    .section {
-      animation: fadeIn 0.5s ease-in-out;
+    /* Hero (imagen de fondo) */
+    .hero {
+      height: 300px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .hero-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
     }
-    header, footer {
-      background: linear-gradient(90deg, #2563eb, #1e40af);
+    .hero-title {
+      position: relative;
+      z-index: 1;
+      color: #fff;
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    /* Transición suave en los botones */
+    button, .accordion-btn {
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    button:hover, .accordion-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Acordeones */
+    .accordion-content {
+      transition: max-height 0.3s ease;
+      overflow: hidden;
+      max-height: 0;
+    }
+    .accordion-content.show {
+      max-height: 500px; /* un valor grande */
     }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
-  <!-- Navbar -->
-  <header class="text-white p-4 shadow-md">
-    <div class="container mx-auto flex flex-wrap justify-between items-center">
-      <h1 class="text-2xl font-bold">Workout Progress Tracker</h1>
-      <nav class="space-x-4">
-        <button class="nav-link hover:underline" data-section="home">Inicio</button>
-        <button class="nav-link hover:underline" data-section="rutinas">Rutinas</button>
-        <button class="nav-link hover:underline" data-section="registro">Registro</button>
-        <button class="nav-link hover:underline" data-section="movilidad">Movilidad</button>
-        <button class="nav-link hover:underline" data-section="fundamentos">Fundamentos</button>
-      </nav>
-    </div>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+  <!-- Hero -->
+  <section 
+    class="hero flex items-center justify-center mb-4"
+    style="background-image: url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1600&q=80')">
+    <div class="hero-overlay"></div>
+    <h1 class="hero-title">GymApp Versión Definitiva</h1>
+  </section>
+
+  <!-- Barra de navegación -->
+  <header class="bg-white shadow-soft p-4 flex justify-center space-x-4">
+    <button id="btnRutina" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+      Rutina
+    </button>
+    <button id="btnProgreso" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+      Progreso
+    </button>
   </header>
 
-  <!-- Secciones -->
-  <main class="container mx-auto p-4">
-    <!-- Sección Inicio -->
-    <section id="section-home" class="section">
-      <h2 class="text-xl font-bold mb-4">Bienvenido</h2>
-      <p class="mb-2">
-        Esta app te ayudará a seguir tu progreso en el entrenamiento, basada en un plan de 6 meses que combina fuerza e hipertrofia. Aquí encontrarás rutinas distribuidas en 4 días por fase, ejercicios con alternativas, una sección para registrar tus progresos, una pestaña de movilidad y un apartado de fundamentos con información esencial sobre nutrición, mentalidad, entrenamiento, descanso y suplementación.
-      </p>
-      <p>Utiliza la barra de navegación para explorar cada sección.</p>
+  <!-- Contenido principal -->
+  <main class="flex-1 p-4 max-w-5xl mx-auto w-full">
+
+    <!-- Sección de Rutina -->
+    <section id="rutinaSection" class="mb-8">
+      <div class="text-center mb-4">
+        <h2 class="text-2xl font-bold">Rutina de Entrenamiento</h2>
+        <p class="text-gray-600">Selecciona un mes para ver los días y ejercicios (acordeón).</p>
+      </div>
+
+      <!-- Botones de Mes -->
+      <div class="flex flex-wrap justify-center mb-6 gap-2">
+        <button class="mesTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-mes="Mes 1">
+          Mes 1
+        </button>
+        <button class="mesTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-mes="Mes 2">
+          Mes 2
+        </button>
+        <button class="mesTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-mes="Mes 3">
+          Mes 3
+        </button>
+      </div>
+
+      <!-- Contenedor donde se inyecta la rutina -->
+      <div id="rutinaContent" class="max-w-3xl mx-auto"></div>
     </section>
 
-    <!-- Sección Rutinas -->
-    <section id="section-rutinas" class="section hidden">
-      <h2 class="text-xl font-bold mb-4">Rutinas</h2>
-      <div class="mb-4 space-y-2">
-        <label class="block">
-          Selecciona la Fase (Meses):
-          <select id="select-fase" class="mt-1 p-2 border rounded w-full">
-            <option value="fase1">Fase 1: Base de Fuerza y Técnica (Meses 1-2)</option>
-            <option value="fase2">Fase 2: Hipertrofia y Funcionalidad (Meses 3-4)</option>
-            <option value="fase3">Fase 3: Fuerza, Potencia y Definición (Meses 5-6)</option>
+    <!-- Sección de Progreso -->
+    <section id="progresoSection" class="hidden">
+      <!-- Formulario para registrar progreso -->
+      <div class="bg-white shadow-soft rounded p-4 mb-6">
+        <h2 class="text-xl font-bold mb-2">Registrar Progreso 📈</h2>
+        <form id="progressForm" class="space-y-4">
+          <div>
+            <label class="block mb-1 font-semibold">Fecha:</label>
+            <input type="date" id="progressDate" class="w-full p-2 border rounded" required />
+          </div>
+          <div>
+            <label class="block mb-1 font-semibold">Mes:</label>
+            <select id="progressMes" class="w-full p-2 border rounded">
+              <option value="">Seleccione Mes</option>
+              <option value="Mes 1">Mes 1 - Fase de Adaptación</option>
+              <option value="Mes 2">Mes 2 - Fase de Progresión</option>
+              <option value="Mes 3">Mes 3 - Fase de Consolidación</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 font-semibold">Día:</label>
+            <select id="progressDia" class="w-full p-2 border rounded">
+              <option value="">Seleccione Día</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 font-semibold">Ejercicio:</label>
+            <select id="progressEjercicio" class="w-full p-2 border rounded">
+              <option value="">Seleccione Ejercicio</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 font-semibold">Series (Reps y Peso):</label>
+            <div id="seriesContainer" class="space-y-2">
+              <!-- Filas de series dinámicas -->
+            </div>
+            <button type="button" id="addSeriesBtn" class="mt-2 px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700">
+              ➕ Agregar Serie
+            </button>
+          </div>
+          <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Guardar Progreso 💾
+          </button>
+        </form>
+      </div>
+
+      <!-- Historial de progreso (agrupado por fecha) -->
+      <div class="bg-white shadow-soft rounded p-4 mb-6">
+        <h2 class="text-xl font-bold mb-2">Historial de Progreso 📚</h2>
+        <div id="progressList" class="space-y-2">
+          <!-- Se inyectan registros guardados -->
+        </div>
+      </div>
+
+      <!-- Sección de Gráfico -->
+      <div class="bg-white shadow-soft rounded p-4">
+        <h2 class="text-xl font-bold mb-2">Gráfico de Progresos 📊</h2>
+        <p class="text-sm text-gray-500 mb-4">
+          Selecciona el mes, día, ejercicio y la serie que deseas graficar. Asegúrate de haber registrado progreso.
+        </p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <select id="chartMes" class="p-2 border rounded">
+            <option value="">Seleccione Mes</option>
+            <option value="Mes 1">Mes 1 - Adaptación</option>
+            <option value="Mes 2">Mes 2 - Progresión</option>
+            <option value="Mes 3">Mes 3 - Consolidación</option>
           </select>
-        </label>
-        <label class="block">
-          Selecciona el Día:
-          <select id="select-dia" class="mt-1 p-2 border rounded w-full">
-            <option value="dia1">Día 1</option>
-            <option value="dia2">Día 2</option>
-            <option value="dia3">Día 3</option>
-            <option value="dia4">Día 4</option>
+          <select id="chartDia" class="p-2 border rounded">
+            <option value="">Seleccione Día</option>
           </select>
-        </label>
+          <select id="chartEjercicio" class="p-2 border rounded">
+            <option value="">Seleccione Ejercicio</option>
+          </select>
+          <select id="chartSerie" class="p-2 border rounded">
+            <option value="">Serie</option>
+            <option value="1">Serie 1</option>
+            <option value="2">Serie 2</option>
+            <option value="3">Serie 3</option>
+            <option value="4">Serie 4</option>
+            <option value="5">Serie 5</option>
+          </select>
+        </div>
+        <button id="updateChartBtn" class="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          Actualizar Gráfico 🔄
+        </button>
+        <canvas id="progressChart" class="w-full h-64"></canvas>
       </div>
-      <div id="routine-content" class="bg-white rounded shadow p-4">
-        <!-- Aquí se mostrará la rutina correspondiente -->
-      </div>
-    </section>
-
-    <!-- Sección Registro -->
-    <section id="section-registro" class="section hidden">
-      <h2 class="text-xl font-bold mb-4">Registro de Progreso</h2>
-      <p class="mb-2">
-        Registra los pesos de cada serie para cada ejercicio y visualiza un gráfico con tu evolución.
-      </p>
-      <div id="registro-form" class="bg-white rounded shadow p-4 mb-4">
-        <div id="registro-inputs"></div>
-        <button id="btn-guardar" class="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Guardar Progreso</button>
-      </div>
-      <div class="bg-white rounded shadow p-4">
-        <h3 class="font-bold mb-2">Gráfico de Progreso</h3>
-        <canvas id="progressChart"></canvas>
-      </div>
-    </section>
-
-    <!-- Sección Movilidad -->
-    <section id="section-movilidad" class="section hidden">
-      <h2 class="text-xl font-bold mb-4">Movilidad, Calentamiento y Estiramiento</h2>
-      <ul class="list-disc list-inside space-y-2">
-        <li><strong>Calentamiento Dinámico:</strong> Realiza 5-10 minutos de movilidad articular (rotaciones de cuello, hombros, caderas y tobillos) y activación muscular (ej. saltos suaves o trote en el lugar).</li>
-        <li><strong>Movilidad Específica:</strong> Incorpora ejercicios como estiramientos dinámicos, sentadillas profundas, estiramientos de isquiotibiales y movimientos de rotación de tronco.</li>
-        <li><strong>Estiramiento Estático:</strong> Al final de cada sesión, dedica 10 minutos a estirar los grupos musculares principales, manteniendo cada estiramiento durante 20-30 segundos.</li>
-        <li><strong>Rutinas de Recuperación:</strong> Usa foam rolling o yoga suave para liberar tensiones y mejorar la circulación.</li>
-      </ul>
-    </section>
-
-    <!-- Sección Fundamentos -->
-    <section id="section-fundamentos" class="section hidden">
-      <h2 class="text-xl font-bold mb-4">Fundamentos</h2>
-      <ul class="list-disc list-inside space-y-2">
-        <li><strong>Mentalidad:</strong> El compromiso, la responsabilidad y la constancia son la base de cualquier transformación. La mentalidad correcta te impulsa a actuar y superar obstáculos.</li>
-        <li><strong>Nutrición:</strong> Una dieta equilibrada y real es esencial. Prioriza alimentos integrales, sigue tus macros y ajusta las calorías según tus objetivos (definición, ganancia o recomposición).</li>
-        <li><strong>Entrenamiento:</strong> La técnica y la progresión son fundamentales. Los ejercicios compuestos y la sobrecarga progresiva permiten maximizar resultados en fuerza e hipertrofia.</li>
-        <li><strong>Descanso y Recuperación:</strong> El sueño de calidad y el descanso activo son imprescindibles para la regeneración muscular y el progreso a largo plazo.</li>
-        <li><strong>Suplementación:</strong> Suplementos como creatina, proteína whey, omega-3 y vitamina D3 pueden potenciar tus resultados si se usan correctamente.</li>
-      </ul>
     </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="text-white p-4 mt-8 text-center">
-    &copy; 2025 Workout Progress Tracker. Todos los derechos reservados.
+  <footer class="bg-white p-4 text-center text-gray-500">
+    <p>© 2025 - GymApp Versión Definitiva. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- Script JS -->
+  <!-- JavaScript principal -->
   <script>
-    // Datos de rutinas basados en la programación propuesta
-    const routines = {
-      // Fase 1: Base de Fuerza y Técnica
-      fase1: {
-        dia1: {
-          title: "Tren Inferior y Core",
-          exercises: [
-            { 
-              name: "Sentadilla con barra", 
-              sets: 4, 
-              reps: "5-6", 
-              tempo: "2-0-1-0", 
-              rest: "2:30 min", 
-              alternatives: "Prensa de piernas o sentadilla búlgara con mancuernas" 
-            },
-            { 
-              name: "Peso muerto rumano", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "2-0-1-0", 
-              rest: "2 min", 
-              alternatives: "Peso muerto con mancuernas" 
-            },
-            { 
-              name: "Extensiones de cuádriceps (máquina)", 
-              sets: 3, 
-              reps: "10-12", 
-              tempo: "2-0-2-0", 
-              rest: "60-90 seg", 
-              alternatives: "Sentadilla frontal ligera" 
-            },
-            { 
-              name: "Elevación de talones", 
-              sets: 3, 
-              reps: "12-15", 
-              tempo: "2-0-1-0", 
-              rest: "60 seg", 
-              alternatives: "Elevación en máquina" 
-            },
-            { 
-              name: "Plancha frontal (Core)", 
-              sets: 3, 
-              reps: "45-60 seg", 
-              tempo: "-", 
-              rest: "-", 
-              alternatives: "Plancha lateral" 
-            }
-          ]
-        },
-        dia2: {
-          title: "Tren Superior (Pecho, Espalda, Hombros)",
-          exercises: [
-            { 
-              name: "Press de banca con barra", 
-              sets: 4, 
-              reps: "5-6", 
-              tempo: "2-0-1-0", 
-              rest: "2-3 min", 
-              alternatives: "Press con mancuernas" 
-            },
-            { 
-              name: "Remo con barra", 
-              sets: 4, 
-              reps: "5-6", 
-              tempo: "2-0-1-0", 
-              rest: "2-3 min", 
-              alternatives: "Remo con mancuernas" 
-            },
-            { 
-              name: "Press militar con barra", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "2-0-1-0", 
-              rest: "2 min", 
-              alternatives: "Press militar con mancuernas" 
-            },
-            { 
-              name: "Dominadas o jalón en polea", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-1-0", 
-              rest: "90 seg", 
-              alternatives: "Dominadas asistidas" 
-            }
-          ]
-        },
-        dia3: {
-          title: "Tren Superior (Brazos y Core)",
-          exercises: [
-            { 
-              name: "Curl de bíceps con barra", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "60 seg", 
-              alternatives: "Curl con mancuernas" 
-            },
-            { 
-              name: "Extensión de tríceps en polea", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "60 seg", 
-              alternatives: "Fondos en banco" 
-            },
-            { 
-              name: "Fondos en banco", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-1-0", 
-              rest: "60 seg", 
-              alternatives: "Flexiones de brazos" 
-            },
-            { 
-              name: "Remo al mentón", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "60 seg", 
-              alternatives: "Elevaciones laterales" 
-            },
-            { 
-              name: "Crunch abdominal", 
-              sets: 3, 
-              reps: "12-15", 
-              tempo: "-", 
-              rest: "-", 
-              alternatives: "Plancha con toque de hombro" 
-            }
-          ]
-        },
-        dia4: {
-          title: "Full Body y Cardio HIIT",
-          exercises: [
-            { 
-              name: "Peso muerto convencional", 
-              sets: 4, 
-              reps: "4-6", 
-              tempo: "2-0-1-0", 
-              rest: "2:30 min", 
-              alternatives: "Peso muerto con mancuerna" 
-            },
-            { 
-              name: "Sentadilla frontal o goblet squat", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "90 seg", 
-              alternatives: "Sentadilla con barra" 
-            },
-            { 
-              name: "Press de banca (ligero)", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "90 seg", 
-              alternatives: "Press con mancuernas" 
-            },
-            { 
-              name: "Finisher HIIT", 
-              sets: 1, 
-              reps: "10 min de intervalos", 
-              tempo: "30 seg on / 30 seg off", 
-              rest: "-", 
-              alternatives: "Sprints en cinta o cuerda" 
-            }
-          ]
-        }
+    // ------------------------------------------------------------
+    // 1. DATOS DE LA RUTINA COMPLETA (Mes 1, 2, 3 con 4 días)
+    // ------------------------------------------------------------
+    const routine = {
+      "Mes 1": {
+        "Día 1: PUSH": [
+          { nombre: "Calentamiento: Movilidad de hombros y pectorales", detalle: "5–10 min. Rotaciones, band pull-aparts, estiramientos dinámicos" },
+          { nombre: "Press de banca (Barra)", detalle: "4 x 5, Tempo: 2-0-1-0, Descanso: 2–3 min" },
+          { nombre: "Press militar (Barra)", detalle: "4 x 5, Tempo: 2-0-1-0, Descanso: 2–3 min" },
+          { nombre: "Press inclinado (Barra o mancuernas)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 90 seg" },
+          { nombre: "Elevaciones laterales (estilo Poliquin)", detalle: "3 x 12–14, Tempo: 2-0-1-0, Descanso: 60 seg" },
+          { nombre: "Extensión de tríceps (barra EZ o mancuerna)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 60 seg" },
+          { nombre: "Core: Plancha", detalle: "3 x 30–45 seg, Descanso: 60 seg" }
+        ],
+        "Día 2: PULL": [
+          { nombre: "Calentamiento: Movilidad de hombros y espalda", detalle: "5–10 min. Rotaciones, band pull-aparts" },
+          { nombre: "Dominadas (asistidas o libres)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Descanso: 2 min" },
+          { nombre: "Remo con barra (Barbell Row)", detalle: "4 x 5–8, Tempo: 2-0-1-0, Descanso: 2 min" },
+          { nombre: "Face Pulls con banda", detalle: "3 x 10–12, Tempo: 2-0-1-0, Descanso: 90 seg" },
+          { nombre: "Curl de bíceps con barra EZ", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 60 seg" },
+          { nombre: "Reverse Flys con mancuernas", detalle: "3 x 10–12, Tempo: 2-0-1-0, Descanso: 60 seg" }
+        ],
+        "Día 3: LEGS": [
+          { nombre: "Calentamiento: Movilidad, foam rolling y activación", detalle: "5–10 min. Incluye puentes de glúteos" },
+          { nombre: "Sentadilla con caja (Box Squat)", detalle: "4 x 5–8, Tempo: 3-0-1-0, Descanso: 2–3 min" },
+          { nombre: "Hip Thrust", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 90 seg" },
+          { nombre: "Peso muerto rumano", detalle: "3 x 6–8, Tempo: 3-0-1-0, Descanso: 2 min" },
+          { nombre: "Bulgarian Split Squat", detalle: "3 x 8 (cada pierna), Tempo: 2-0-1-0, Descanso: 90 seg" },
+          { nombre: "Estabilidad: Band Walks o Clamshells", detalle: "3 x 15 pasos por lado, Descanso: 60 seg" },
+          { nombre: "Elevación de gemelos", detalle: "3 x 12–15, Tempo: 2-0-1-0, Descanso: 60 seg" }
+        ],
+        "Día 4: TOTAL BODY": [
+          { nombre: "Calentamiento: Movilidad general y activación", detalle: "5–10 min" },
+          { nombre: "Landmine Squat to Press", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 2–3 min" },
+          { nombre: "Kettlebell Swing", detalle: "3 x 10, Ejecución explosiva, Descanso: 90 seg" },
+          { nombre: "Single-Leg Romanian Deadlift", detalle: "3 x 8 (cada pierna), Tempo: 2-0-1-0, Descanso: 90 seg" },
+          { nombre: "Pallof Press", detalle: "3 x 10 (cada lado), Tempo: 2-0-2-0, Descanso: 60 seg" },
+          { nombre: "Opcional: Box Step Jump", detalle: "2 x 5 (cada pierna), Descanso: 60 seg" }
+        ]
       },
-      // Fase 2: Hipertrofia y Funcionalidad
-      fase2: {
-        dia1: {
-          title: "Tren Inferior (Hipertrofia)",
-          exercises: [
-            { 
-              name: "Sentadilla frontal", 
-              sets: 4, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "90-120 seg", 
-              alternatives: "Prensa o sentadilla búlgara" 
-            },
-            { 
-              name: "Peso muerto rumano", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "90-120 seg", 
-              alternatives: "Peso muerto con mancuernas" 
-            },
-            { 
-              name: "Zancadas con mancuernas", 
-              sets: 3, 
-              reps: "10-12 por pierna", 
-              tempo: "2-0-2-0", 
-              rest: "60-90 seg", 
-              alternatives: "Step-up" 
-            },
-            { 
-              name: "Elevaciones de gemelos", 
-              sets: 3, 
-              reps: "15", 
-              tempo: "2-0-1-0", 
-              rest: "60 seg", 
-              alternatives: "Elevación en máquina" 
-            }
-          ]
-        },
-        dia2: {
-          title: "Tren Superior (Pecho y Espalda)",
-          exercises: [
-            { 
-              name: "Press de banca (barra o mancuernas)", 
-              sets: 4, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "90-120 seg", 
-              alternatives: "Press inclinado con mancuernas" 
-            },
-            { 
-              name: "Remo con barra o máquina", 
-              sets: 4, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "90-120 seg", 
-              alternatives: "Remo con mancuernas" 
-            },
-            { 
-              name: "Aperturas con mancuernas", 
-              sets: 3, 
-              reps: "10-12", 
-              tempo: "2-0-2-0", 
-              rest: "60 seg", 
-              alternatives: "Press en máquina" 
-            },
-            { 
-              name: "Jalón en polea", 
-              sets: 3, 
-              reps: "10-12", 
-              tempo: "2-0-2-0", 
-              rest: "60 seg", 
-              alternatives: "Dominadas asistidas" 
-            }
-          ]
-        },
-        dia3: {
-          title: "Tren Superior (Hombros y Brazos)",
-          exercises: [
-            { 
-              name: "Press militar con mancuernas", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "90 seg", 
-              alternatives: "Elevaciones frontales" 
-            },
-            { 
-              name: "Elevaciones laterales", 
-              sets: 3, 
-              reps: "10-12", 
-              tempo: "-", 
-              rest: "60 seg", 
-              alternatives: "Elevaciones posteriores" 
-            },
-            { 
-              name: "Curl de bíceps", 
-              sets: 3, 
-              reps: "10-12", 
-              tempo: "2-0-2-0", 
-              rest: "60 seg", 
-              alternatives: "Curl concentrado" 
-            },
-            { 
-              name: "Extensión de tríceps", 
-              sets: 3, 
-              reps: "10-12", 
-              tempo: "2-0-2-0", 
-              rest: "60 seg", 
-              alternatives: "Fondos en banco" 
-            },
-            { 
-              name: "Remo al mentón", 
-              sets: 3, 
-              reps: "8-10", 
-              tempo: "2-0-2-0", 
-              rest: "60 seg", 
-              alternatives: "Encogimientos con barra" 
-            }
-          ]
-        },
-        dia4: {
-          title: "Full Body y Core con HIIT",
-          exercises: [
-            { 
-              name: "Peso muerto convencional", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "2-0-1-0", 
-              rest: "2 min", 
-              alternatives: "Peso muerto con mancuernas" 
-            },
-            { 
-              name: "Sentadilla con barra", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "2-0-1-0", 
-              rest: "2 min", 
-              alternatives: "Sentadilla con mancuernas" 
-            },
-            { 
-              name: "Press de banca", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "2-0-1-0", 
-              rest: "2 min", 
-              alternatives: "Press con mancuernas" 
-            },
-            { 
-              name: "Circuito de core", 
-              sets: "3 rondas", 
-              reps: "10 burpees, 15 mountain climbers, 20 seg de plancha", 
-              tempo: "-", 
-              rest: "60 seg entre rondas", 
-              alternatives: "Circuito funcional alternativo" 
-            },
-            { 
-              name: "HIIT Finisher", 
-              sets: 1, 
-              reps: "12 min (30 seg on / 30 seg off)", 
-              tempo: "-", 
-              rest: "-", 
-              alternatives: "Sprints en cinta o cuerda" 
-            }
-          ]
-        }
+      "Mes 2": {
+        "Día 1: PUSH": [ ... ],
+        "Día 2: PULL": [ ... ],
+        "Día 3: LEGS": [ ... ],
+        "Día 4: TOTAL BODY": [ ... ]
       },
-      // Fase 3: Fuerza, Potencia y Definición
-      fase3: {
-        dia1: {
-          title: "Fuerza Inferior",
-          exercises: [
-            { 
-              name: "Sentadilla con barra", 
-              sets: 4, 
-              reps: "3-5", 
-              tempo: "Explosivo (1-0-1-0)", 
-              rest: "3 min", 
-              alternatives: "Sentadilla con mancuernas pesadas" 
-            },
-            { 
-              name: "Peso muerto convencional", 
-              sets: 4, 
-              reps: "3-5", 
-              tempo: "2-0-1-0", 
-              rest: "3 min", 
-              alternatives: "Peso muerto con mancuerna" 
-            },
-            { 
-              name: "Prensa de piernas", 
-              sets: 3, 
-              reps: "4-6", 
-              tempo: "2-0-1-0", 
-              rest: "3 min", 
-              alternatives: "Sentadilla hack" 
-            },
-            { 
-              name: "Elevación de gemelos pesadas", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "2-0-1-0", 
-              rest: "2 min", 
-              alternatives: "Elevación de talones en máquina" 
-            }
-          ]
-        },
-        dia2: {
-          title: "Fuerza Superior",
-          exercises: [
-            { 
-              name: "Press de banca", 
-              sets: 4, 
-              reps: "3-5", 
-              tempo: "Explosivo", 
-              rest: "3 min", 
-              alternatives: "Press de banca con mancuernas" 
-            },
-            { 
-              name: "Remo con barra", 
-              sets: 4, 
-              reps: "3-5", 
-              tempo: "2-0-1-0", 
-              rest: "3 min", 
-              alternatives: "Remo con mancuernas" 
-            },
-            { 
-              name: "Press militar", 
-              sets: 3, 
-              reps: "3-5", 
-              tempo: "Explosivo", 
-              rest: "2-3 min", 
-              alternatives: "Press militar con mancuernas" 
-            },
-            { 
-              name: "Dominadas con lastre", 
-              sets: 3, 
-              reps: "3-5", 
-              tempo: "2-0-1-0", 
-              rest: "3 min", 
-              alternatives: "Dominadas asistidas" 
-            }
-          ]
-        },
-        dia3: {
-          title: "Explosividad y Potencia (Full Body)",
-          exercises: [
-            { 
-              name: "Power Clean o Push Press", 
-              sets: 4, 
-              reps: "4-6", 
-              tempo: "Explosivo", 
-              rest: "2-3 min", 
-              alternatives: "Kettlebell swings" 
-            },
-            { 
-              name: "Sentadilla frontal", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "2-0-1-0", 
-              rest: "2 min", 
-              alternatives: "Goblet squat" 
-            },
-            { 
-              name: "Remo explosivo", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "Explosivo", 
-              rest: "2 min", 
-              alternatives: "Remo en TRX" 
-            },
-            { 
-              name: "Plyometric push-ups", 
-              sets: 3, 
-              reps: "6-8", 
-              tempo: "-", 
-              rest: "2 min", 
-              alternatives: "Flexiones explosivas" 
-            }
-          ]
-        },
-        dia4: {
-          title: "Circuito de Recuperación Activa, Movilidad y Estiramiento",
-          exercises: [
-            { 
-              name: "Cardio ligero (caminata o bici)", 
-              sets: 1, 
-              reps: "10 min", 
-              tempo: "-", 
-              rest: "-", 
-              alternatives: "Elíptica a ritmo suave" 
-            },
-            { 
-              name: "Rutina de movilidad", 
-              sets: 3, 
-              reps: "30 seg por ejercicio", 
-              tempo: "-", 
-              rest: "30 seg entre ejercicios", 
-              alternatives: "Estiramientos dinámicos" 
-            },
-            { 
-              name: "Estiramientos estáticos", 
-              sets: 1, 
-              reps: "10 min", 
-              tempo: "-", 
-              rest: "-", 
-              alternatives: "Yoga suave o foam rolling" 
-            }
-          ]
-        }
+      "Mes 3": {
+        "Día 1: PUSH": [ ... ],
+        "Día 2: PULL": [ ... ],
+        "Día 3: LEGS": [ ... ],
+        "Día 4: TOTAL BODY": [ ... ]
       }
     };
 
-    // Variables globales
-    let currentFase = "fase1";
-    let currentDia = "dia1";
-    let progressData = JSON.parse(localStorage.getItem("progressData")) || [];
+    // ------------------------------------------------------------
+    // 2. MOSTRAR RUTINA (acordeones por día)
+    // ------------------------------------------------------------
+    const mesTabs = document.querySelectorAll('.mesTab');
+    const rutinaContent = document.getElementById('rutinaContent');
 
-    // Referencias a elementos DOM
-    const sections = {
-      home: document.getElementById("section-home"),
-      rutinas: document.getElementById("section-rutinas"),
-      registro: document.getElementById("section-registro"),
-      movilidad: document.getElementById("section-movilidad"),
-      fundamentos: document.getElementById("section-fundamentos")
-    };
-    const navLinks = document.querySelectorAll(".nav-link");
-    const selectFase = document.getElementById("select-fase");
-    const selectDia = document.getElementById("select-dia");
-    const routineContent = document.getElementById("routine-content");
-    const registroInputs = document.getElementById("registro-inputs");
-    const btnGuardar = document.getElementById("btn-guardar");
-    const progressChartCtx = document.getElementById("progressChart").getContext("2d");
-    let progressChart;
-
-    // Función para mostrar una sección y ocultar las demás
-    function showSection(section) {
-      Object.values(sections).forEach(sec => sec.classList.add("hidden"));
-      sections[section].classList.remove("hidden");
-      if(section === "registro"){
-        generarRegistroInputs();
-        actualizarChart();
-      }
-    }
-
-    // Event listeners para la navegación
-    navLinks.forEach(link => {
-      link.addEventListener("click", () => {
-        const section = link.getAttribute("data-section");
-        showSection(section);
+    mesTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const mes = tab.getAttribute('data-mes');
+        displayRutina(mes);
       });
     });
 
-    // Función para mostrar la rutina seleccionada
-    function mostrarRutina() {
-      currentFase = selectFase.value;
-      currentDia = selectDia.value;
-      const rutina = routines[currentFase][currentDia];
-      let html = `<h3 class="text-lg font-bold mb-2">${rutina.title}</h3>`;
-      html += `<ul class="space-y-2">`;
-      rutina.exercises.forEach((ex, index) => {
-        html += `<li class="border p-2 rounded bg-gray-50">
-                  <p class="font-semibold">${ex.name}</p>
-                  <p class="text-sm">Series: ${ex.sets} | Reps: ${ex.reps} | Tempo: ${ex.tempo} | Descanso: ${ex.rest}</p>
-                  <p class="text-sm italic">Alternativa: ${ex.alternatives}</p>
-                </li>`;
+    function displayRutina(mes) {
+      const dias = Object.keys(routine[mes] || {});
+      let html = `<h3 class="text-xl font-bold mb-2 text-center">Rutina ${mes}</h3>`;
+      dias.forEach(dia => {
+        html += `
+          <div class="bg-white shadow-soft rounded mb-4">
+            <button class="w-full text-left px-4 py-2 font-semibold accordion-btn bg-gray-100 hover:bg-gray-200"
+                    onclick="toggleDay('${mes}','${dia}', this)">
+              <div class="flex justify-between items-center">
+                <span>${dia}</span>
+                <span class="text-xl">➕</span>
+              </div>
+            </button>
+            <div class="accordion-content px-4 pb-2" id="content-${mes}-${dia.replace(/[^a-zA-Z0-9]/g,'')}">
+        `;
+        const ejercicios = routine[mes][dia];
+        ejercicios.forEach(e => {
+          html += `
+            <div class="my-2">
+              <p class="font-semibold">${e.nombre}</p>
+              <p class="text-sm text-gray-600">${e.detalle}</p>
+            </div>
+          `;
+        });
+        html += `</div></div>`;
       });
-      html += `</ul>`;
-      routineContent.innerHTML = html;
+      rutinaContent.innerHTML = html;
     }
 
-    selectFase.addEventListener("change", mostrarRutina);
-    selectDia.addEventListener("change", mostrarRutina);
+    function toggleDay(mes, dia, btn) {
+      const icon = btn.querySelector('span.text-xl');
+      const contentId = `content-${mes}-${dia.replace(/[^a-zA-Z0-9]/g,'')}`;
+      const content = document.getElementById(contentId);
+      if (content.classList.contains('show')) {
+        content.classList.remove('show');
+        icon.textContent = '➕';
+      } else {
+        content.classList.add('show');
+        icon.textContent = '➖';
+      }
+    }
 
-    // Inicializa la rutina al cargar
-    mostrarRutina();
+    // Mostrar Mes 1 por defecto
+    displayRutina("Mes 1");
 
-    // Función para generar inputs de registro basados en la rutina seleccionada
-    function generarRegistroInputs() {
-      const rutina = routines[currentFase][currentDia];
-      let html = `<h3 class="font-bold mb-2">${rutina.title} - Registro de Pesos</h3>`;
-      rutina.exercises.forEach((ex, index) => {
-        html += `<div class="mb-4 border-b pb-2">
-                  <p class="font-semibold">${ex.name} <span class="text-sm italic">(${ex.sets} series x ${ex.reps})</span></p>
-                  <div class="grid grid-cols-${ex.sets} gap-2 mt-2">`;
-        for (let i = 1; i <= ex.sets; i++) {
-          html += `<input type="number" min="0" step="0.5" placeholder="Serie ${i} (kg)" data-exercise="${index}" data-set="${i}" class="p-2 border rounded" />`;
+    // ------------------------------------------------------------
+    // 3. NAVEGACIÓN ENTRE SECCIONES (Rutina / Progreso)
+    // ------------------------------------------------------------
+    const btnRutina = document.getElementById('btnRutina');
+    const btnProgreso = document.getElementById('btnProgreso');
+    const rutinaSection = document.getElementById('rutinaSection');
+    const progresoSection = document.getElementById('progresoSection');
+
+    btnRutina.addEventListener('click', () => {
+      rutinaSection.classList.remove('hidden');
+      progresoSection.classList.add('hidden');
+    });
+    btnProgreso.addEventListener('click', () => {
+      progresoSection.classList.remove('hidden');
+      rutinaSection.classList.add('hidden');
+      // Actualiza selects
+      populateProgressDay();
+    });
+
+    // ------------------------------------------------------------
+    // 4. FORMULARIO DE PROGRESO (Historial agrupado por fecha)
+    // ------------------------------------------------------------
+    const progressForm = document.getElementById('progressForm');
+    const progressDate = document.getElementById('progressDate');
+    const progressMesSelect = document.getElementById('progressMes');
+    const progressDiaSelect = document.getElementById('progressDia');
+    const progressEjercicioSelect = document.getElementById('progressEjercicio');
+    const seriesContainer = document.getElementById('seriesContainer');
+    const addSeriesBtn = document.getElementById('addSeriesBtn');
+
+    progressMesSelect.addEventListener('change', populateProgressDay);
+    progressDiaSelect.addEventListener('change', populateProgressEjercicio);
+
+    function populateProgressDay() {
+      progressDiaSelect.innerHTML = '<option value="">Seleccione Día</option>';
+      progressEjercicioSelect.innerHTML = '<option value="">Seleccione Ejercicio</option>';
+      const mes = progressMesSelect.value.replace(/ *-.*$/,'');
+      if (routine[mes]) {
+        const dias = Object.keys(routine[mes]);
+        dias.forEach(d => {
+          const option = document.createElement('option');
+          option.value = d;
+          option.textContent = d;
+          progressDiaSelect.appendChild(option);
+        });
+      }
+    }
+
+    function populateProgressEjercicio() {
+      progressEjercicioSelect.innerHTML = '<option value="">Seleccione Ejercicio</option>';
+      const mes = progressMesSelect.value.replace(/ *-.*$/,'');
+      const dia = progressDiaSelect.value;
+      if (routine[mes] && routine[mes][dia]) {
+        routine[mes][dia].forEach(e => {
+          const option = document.createElement('option');
+          option.value = e.nombre;
+          option.textContent = e.nombre;
+          progressEjercicioSelect.appendChild(option);
+        });
+      }
+    }
+
+    function addSeriesRow() {
+      const row = document.createElement('div');
+      row.className = 'flex space-x-2';
+      row.innerHTML = `
+        <input type="number" placeholder="Reps" class="w-1/2 p-2 border rounded" required>
+        <input type="number" placeholder="Peso (kg)" class="w-1/2 p-2 border rounded" required>
+        <button type="button" class="bg-red-500 text-white px-2 rounded hover:bg-red-600">🗑</button>
+      `;
+      const btnDel = row.querySelector('button');
+      btnDel.addEventListener('click', () => row.remove());
+      seriesContainer.appendChild(row);
+    }
+
+    addSeriesBtn.addEventListener('click', addSeriesRow);
+    // Fila por defecto
+    addSeriesRow();
+
+    progressForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const dateVal = progressDate.value;
+      const mesVal = progressMesSelect.value.replace(/ *-.*$/,'');
+      const diaVal = progressDiaSelect.value;
+      const ejVal = progressEjercicioSelect.value;
+
+      if (!dateVal || !mesVal || !diaVal || !ejVal) {
+        alert("Por favor completa Fecha, Mes, Día y Ejercicio.");
+        return;
+      }
+
+      const rows = seriesContainer.querySelectorAll('div.flex');
+      let series = [];
+      rows.forEach((row, i) => {
+        const inputs = row.querySelectorAll('input');
+        const reps = inputs[0].value;
+        const peso = inputs[1].value;
+        if (reps && peso) {
+          series.push({ serie: i+1, reps, peso });
         }
-        html += `</div>
-                 </div>`;
       });
-      registroInputs.innerHTML = html;
+      if (series.length === 0) {
+        alert("Agrega al menos una serie válida.");
+        return;
+      }
+
+      let progressDays = JSON.parse(localStorage.getItem('gymProgress')) || [];
+      let existingDay = progressDays.find(d => d.date === dateVal);
+      if (!existingDay) {
+        existingDay = { date: dateVal, workouts: [] };
+        progressDays.push(existingDay);
+      }
+      existingDay.workouts.push({ mes: mesVal, dia: diaVal, ejercicio: ejVal, series });
+
+      localStorage.setItem('gymProgress', JSON.stringify(progressDays));
+      // Reset
+      progressForm.reset();
+      seriesContainer.innerHTML = '';
+      addSeriesRow();
+      loadProgressList();
+      updateChart();
+    });
+
+    // ------------------------------------------------------------
+    // 5. HISTORIAL AGRUPADO
+    // ------------------------------------------------------------
+    function loadProgressList() {
+      const progressList = document.getElementById('progressList');
+      let progressDays = JSON.parse(localStorage.getItem('gymProgress')) || [];
+
+      if (progressDays.length === 0) {
+        progressList.innerHTML = "<p class='text-gray-500'>No hay entradas registradas aún.</p>";
+        return;
+      }
+
+      // Ordenar por fecha desc
+      progressDays.sort((a,b) => new Date(b.date) - new Date(a.date));
+      let html = '';
+      progressDays.forEach(day => {
+        html += `
+          <div class="border-b py-2">
+            <div class="font-bold flex items-center cursor-pointer" onclick="toggleHistory(this.nextElementSibling)">
+              <img src="https://cdn-icons-png.flaticon.com/512/3004/3004143.png" 
+                   class="w-5 h-5 mr-2" alt="calendar icon" />
+              Fecha: ${day.date} (Total entrenos: ${day.workouts.length})
+            </div>
+            <div class="ml-6 hidden">
+        `;
+        day.workouts.forEach((w,i) => {
+          html += `
+            <div class="bg-gray-50 rounded p-2 my-2">
+              <p class="font-semibold text-sm">
+                Entreno #${i+1}: ${w.mes}, ${w.dia}, Ejercicio: ${w.ejercicio}
+              </p>
+              <ul class="list-disc ml-4 text-sm">
+          `;
+          w.series.forEach(s => {
+            html += `<li>Serie ${s.serie}: ${s.reps} reps, ${s.peso} kg</li>`;
+          });
+          html += `</ul></div>`;
+        });
+        html += `</div></div>`;
+      });
+      progressList.innerHTML = html;
     }
 
-    // Función para guardar los progresos en localStorage
-    btnGuardar.addEventListener("click", () => {
-      const inputs = registroInputs.querySelectorAll("input");
-      let sessionRecord = {
-        fecha: new Date().toLocaleString(),
-        fase: currentFase,
-        dia: currentDia,
-        data: []
-      };
-      inputs.forEach(input => {
-        sessionRecord.data.push({
-          exerciseIndex: input.getAttribute("data-exercise"),
-          set: input.getAttribute("data-set"),
-          weight: parseFloat(input.value) || 0
+    function toggleHistory(el) {
+      el.classList.toggle('hidden');
+    }
+
+    loadProgressList();
+
+    // ------------------------------------------------------------
+    // 6. GRÁFICA (Chart.js)
+    // ------------------------------------------------------------
+    let chart;
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    const chartMesSelect = document.getElementById('chartMes');
+    const chartDiaSelect = document.getElementById('chartDia');
+    const chartEjercicioSelect = document.getElementById('chartEjercicio');
+    const chartSerieSelect = document.getElementById('chartSerie');
+    const updateChartBtn = document.getElementById('updateChartBtn');
+
+    chartMesSelect.addEventListener('change', () => {
+      chartDiaSelect.innerHTML = '<option value="">Seleccione Día</option>';
+      chartEjercicioSelect.innerHTML = '<option value="">Seleccione Ejercicio</option>';
+      const mes = chartMesSelect.value.replace(/ *-.*$/,'');
+      if (routine[mes]) {
+        const dias = Object.keys(routine[mes]);
+        dias.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d;
+          opt.textContent = d;
+          chartDiaSelect.appendChild(opt);
+        });
+      }
+    });
+
+    chartDiaSelect.addEventListener('change', () => {
+      chartEjercicioSelect.innerHTML = '<option value="">Seleccione Ejercicio</option>';
+      const mes = chartMesSelect.value.replace(/ *-.*$/,'');
+      const dia = chartDiaSelect.value;
+      if (routine[mes] && routine[mes][dia]) {
+        routine[mes][dia].forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.nombre;
+          opt.textContent = e.nombre;
+          chartEjercicioSelect.appendChild(opt);
+        });
+      }
+    });
+
+    updateChartBtn.addEventListener('click', updateChart);
+
+    function getAllWorkouts() {
+      let progressDays = JSON.parse(localStorage.getItem('gymProgress')) || [];
+      const all = [];
+      progressDays.forEach(day => {
+        day.workouts.forEach(w => {
+          all.push({
+            date: day.date,
+            mes: w.mes,
+            dia: w.dia,
+            ejercicio: w.ejercicio,
+            series: w.series
+          });
         });
       });
-      progressData.push(sessionRecord);
-      localStorage.setItem("progressData", JSON.stringify(progressData));
-      alert("¡Progreso guardado!");
-      actualizarChart();
-    });
+      // Ordenar asc
+      all.sort((a,b) => new Date(a.date) - new Date(b.date));
+      return all;
+    }
 
-    // Función para actualizar el gráfico con los datos guardados
-    function actualizarChart() {
-      const labels = progressData.map(rec => rec.fecha);
-      const totals = progressData.map(rec => {
-        return rec.data.reduce((sum, item) => sum + item.weight, 0);
-      });
-      if (progressChart) {
-        progressChart.destroy();
+    function updateChart() {
+      const selMes = chartMesSelect.value.replace(/ *-.*$/,'');
+      const selDia = chartDiaSelect.value;
+      const selEjercicio = chartEjercicioSelect.value;
+      const selSerie = chartSerieSelect.value;
+
+      let allWorkouts = getAllWorkouts();
+      // Filtrar
+      if (selMes) allWorkouts = allWorkouts.filter(w => w.mes === selMes);
+      if (selDia) allWorkouts = allWorkouts.filter(w => w.dia === selDia);
+      if (selEjercicio) allWorkouts = allWorkouts.filter(w => w.ejercicio === selEjercicio);
+
+      if (!selSerie) {
+        alert("Selecciona una serie (1,2,3,4,5) para graficar.");
+        return;
       }
-      progressChart = new Chart(progressChartCtx, {
+
+      // Ordenar por fecha asc
+      allWorkouts.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+      const labels = [];
+      const dataPoints = [];
+      allWorkouts.forEach(w => {
+        const found = w.series.find(s => s.serie.toString() === selSerie);
+        if (found) {
+          labels.push(w.date);
+          dataPoints.push(parseFloat(found.peso));
+        }
+      });
+
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
           datasets: [{
-            label: 'Peso Total (kg)',
-            data: totals,
-            backgroundColor: 'rgba(59,130,246,0.5)',
-            borderColor: 'rgba(59,130,246,1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.3
+            label: 'Peso (kg)',
+            data: dataPoints,
+            borderColor: 'rgba(75,192,192,1)',
+            backgroundColor: 'rgba(75,192,192,0.2)',
+            tension: 0.1,
+            pointRadius: 5,
+            pointHoverRadius: 7
           }]
         },
         options: {
           responsive: true,
           scales: {
-            y: { beginAtZero: true }
+            x: {
+              title: { display: true, text: 'Fecha' }
+            },
+            y: {
+              title: { display: true, text: 'Peso (kg)' },
+              suggestedMin: 0
+            }
+          },
+          plugins: {
+            legend: { display: true }
           }
         }
       });
-    }
-
-    // Si la sección Registro está activa al cargar, inicializa los inputs y el gráfico
-    if (!sections.registro.classList.contains("hidden")) {
-      generarRegistroInputs();
-      actualizarChart();
     }
   </script>
 </body>
